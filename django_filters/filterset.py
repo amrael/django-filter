@@ -79,10 +79,15 @@ def get_model_field(model, f):
         except FieldDoesNotExist:
             return None
         if isinstance(rel, ForeignObjectRel):
-            model = rel.model
+            if hasattr(rel, "related_model"):
+                # django >= 1.8 (ForeignObjectRel)
+                opts = rel.related_model._meta
+            else:
+                # django < 1.8 (RelatedObject)
+                opts = rel.opts
         else:
             model = rel.rel.to
-        opts = model._meta
+            opts = model._meta
     try:
         rel, model, direct, m2m = opts.get_field_by_name(parts[-1])
     except FieldDoesNotExist:
